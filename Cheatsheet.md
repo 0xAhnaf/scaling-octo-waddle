@@ -10,8 +10,8 @@
 
 ## Table of Contents
 
-1. [Configuration Reference](#configuration-reference)
-2. [Prerequisites](#prerequisites)
+1. [Prerequisites](#prerequisites)
+2. [Restrict Permission](#0-Restrict-permission-for-ssh-key)
 3. [SSH Connection](#1-ssh-connection)
 4. [Clone Repository](#2-clone-repository)
 5. [MySQL Container](#3-mysql-container)
@@ -24,37 +24,14 @@
 12. [Important Notes](#important-notes)
 13. [Troubleshooting](#troubleshooting)
 
----
-
-## Configuration Reference
-
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `SSH_KEY` | `~/Downloads/s202302040**` | Path to private SSH key |
-| `SERVER_USER` | `s202302040**` | Remote server username |
-| `SERVER_IP` | `187.52.122.100` | Server public IP address |
-| `APP_PORT` | `30**` | Application listening port |
-| `DB_NAME` | `bookdb` | MySQL database name |
-| `DB_PORT` | `3306` | MySQL port |
-| `DB_USER` | `s202302040**` | Database username |
-| `DB_PASSWORD` | `PASSWORD` | Database password *(change in production)* |
-| `DOMAIN` | `s202302040**.austattendance.online` | Public domain name |
-| `REPO_URL` | `https://github.com/S-Arshad032/cse3100-sticky-note-previous-year.git` | GitHub repository |
-| `PROJECT_DIR` | `/home/s202302040**/cse3100-sticky-note-previous-year` | Project path on server |
-| `PM2_NAME` | `bookapi-0**` | PM2 process name |
-| `CONTAINER_NAME` | `bookdb` | MySQL Docker container name |
-
-> ⚠️ **Security:** Never commit actual passwords. Replace `PASSWORD` with a strong secret. Use `.env.example` as a template and fill in secrets locally.
-
----
 
 ## Prerequisites
 
-- SSH key configured at `SSH_KEY` with access to `SERVER_USER@SERVER_IP`
+- SSH key configured at `SSH_KEY` with access to `s202302040**@187.52.122.100`
 - Docker installed and running on the server
 - PM2 installed globally (`npm install -g pm2`)
 - Nginx installed and running
-- Domain `DOMAIN` pointed to `SERVER_IP` (A record)
+- Domain `s202302040**.austattendance.online` pointed to `187.52.122.100` (A record)
 
 ---
 
@@ -75,7 +52,7 @@ icacls <path_to_your_privatekey> /grant:r ""$($env:USERNAME):(R)"""
 ## 1. SSH Connection
 
 ```bash
-ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP"
+ssh -i s202302040** "s202302040**@187.52.122.100"
 ```
 
 ---
@@ -83,7 +60,7 @@ ssh -i "$SSH_KEY" "$SERVER_USER@$SERVER_IP"
 ## 2. Clone Repository
 
 ```bash
-cd /home/$SERVER_USER
+cd /home/s202302040**
 git clone "$REPO_URL"
 cd cse3100-sticky-note-previous-year
 cat .env.example
@@ -95,12 +72,12 @@ cat .env.example
 
 ### Start Container
 ```bash
-sudo docker start "$CONTAINER_NAME"
+sudo docker start bookdb
 ```
 
 ### Get Container IP
 ```bash
-sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONTAINER_NAME"
+sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' bookdb
 ```
 
 > **Action:** Copy the printed IP address — you'll need it for `DB_HOST` in the `.env` file.
@@ -110,7 +87,7 @@ sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 ## 4. Database User Setup
 
 ```bash
-sudo docker exec -it "$CONTAINER_NAME" mysql -uroot -prootpass
+sudo docker exec -it bookdb mysql -uroot -prootpass
 ```
 
 ```sql
@@ -126,8 +103,8 @@ EXIT;
 ## 5. Environment Configuration
 
 ```bash
-cp .env.example /home/$SERVER_USER/.env
-nano /home/$SERVER_USER/.env
+cp .env.example /home/s202302040**/.env
+nano /home/s202302040**/.env
 ```
 
 Paste the following values into `.env`:
@@ -151,8 +128,8 @@ DB_PASSWORD=PASSWORD
 ## 6. PM2 Process Manager
 
 ```bash
-cd "$PROJECT_DIR"
-pm2 start server.js --name "$PM2_NAME"
+cd "home/s202302040**/cse3100-sticky-note-previous-year"
+pm2 start server.js --name bookapi-0**
 pm2 save
 pm2 startup
 ```
@@ -259,11 +236,11 @@ curl http://s202302040**.austattendance.online/api/health
 
 | Symptom | Diagnosis Command | Likely Fix |
 |---------|-------------------|------------|
-| `curl` fails locally | `pm2 logs $PM2_NAME` | Check app errors, verify `.env` values |
+| `curl` fails locally | `pm2 logs bookapi-0**` | Check app errors, verify `.env` values |
 | Nginx returns 502 | `sudo nginx -t` | Fix config, ensure `proxy_pass` port matches `APP_PORT` |
 | Database connection refused | `docker inspect $CONTAINER_NAME` | Verify `DB_HOST` matches container IP |
 | PM2 process not persisting | `pm2 list` after reboot | Re-run `pm2 startup` command exactly as printed |
-| Domain not resolving | `dig $DOMAIN` | Verify A record points to `SERVER_IP` |
+| Domain not resolving | `dig s202302040**.austattendance.online` | Verify A record points to `187.52.122.100` |
 | Permission denied (SSH) | `ssh -v -i $SSH_KEY ...` | Check key permissions (`chmod 600`), correct user/IP |
 
 ---
@@ -280,7 +257,7 @@ curl http://s202302040**.austattendance.online/api/health
 - [ ] Local health check returns `{"status":"ok","database":"up"}`
 - [ ] Nginx site enabled and reloaded
 - [ ] Public health check returns `{"status":"ok","database":"up"}`
-- [ ] Application accessible via browser at `http://$DOMAIN`
+- [ ] Application accessible via browser at `http://s202302040**.austattendance.online`
 
 ---
 
