@@ -58,6 +58,20 @@
 
 ---
 
+Link to ssh key: **[https://drive.google.com/drive/folders/1h-mK3DO2VyKcZn-3-io85SvV-9i38n6G?usp=drive_link](https://drive.google.com/drive/folders/1h-mK3DO2VyKcZn-3-io85SvV-9i38n6G?usp=drive_link)**
+
+---
+
+## 0. Restrict permission for ssh key
+
+```
+icacls <path_to_your_privatekey> /inheritance:r
+icacls <path_to_your_privatekey> /grant:r ""$($env:USERNAME):(R)"""
+```
+
+
+---
+
 ## 1. SSH Connection
 
 ```bash
